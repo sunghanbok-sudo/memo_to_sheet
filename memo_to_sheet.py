@@ -95,8 +95,9 @@ def save_to_sheet(user_name, content):
             sh = gc.open(sheet_name)
             worksheet = sh.worksheet(tab_name)
 
-            now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+            korea_time = datetime.datetime.now() + datetime.timedelta(hours=9)
+            now_str = korea_time.strftime("%Y-%m-%d %H:%M:%S")
+            
             # 2번째 줄에 삽입 (최신순)
             worksheet.insert_row([now_str, user_name, content], 2)
             
@@ -159,4 +160,5 @@ def main():
                         st.rerun()
 
 if __name__ == "__main__":
+
     main()
