@@ -1,8 +1,9 @@
 import streamlit as st
-import google.generativeai as genai
 import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 import datetime
-import time
+# [중요] 구글 라이브러리 대신 Groq을 가져옵니다.
+from groq import Groq
 
 # --- 페이지 설정 ---
 st.set_page_config(
@@ -49,19 +50,35 @@ if 'step' not in st.session_state: st.session_state.step = 'input'
 if 'raw_text' not in st.session_state: st.session_state.raw_text = ""
 if 'summarized_text' not in st.session_state: st.session_state.summarized_text = ""
 
-# --- [기능 1] Gemini AI 요약 함수 (Secrets 적용) ---
+# --- [기능 1] Groq (Llama 3) AI 요약 함수 ---
 def run_ai_summarize(text):
     try:
-        # [변경] 코드 내 키 삭제 -> 클라우드 금고(secrets)에서 가져옴
-        api_key = st.secrets["GEMINI_API_KEY"]
-        genai.configure(api_key=api_key)
-        
-        # 모델은 1.5-flash가 안되면 flash-latest 사용 (복성한님 상황 반영)
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        
-        prompt = f"""
+        # Secrets에서 Groq 키를 가져옵니다.
+        client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+
+        # AI에게 일을 시킵니다.
+        completion = client.chat.completions.create(
+            model="llama3-8b-8192",  # 무료이고 가장 빠른 모델
+            messages=[
+                {
+                    "role": "system", 
+                    "content": "당신은 진주햄 마케팅팀의 유능한 비서입니다. 업무 내용을 바탕으로 [실행 요약]을 3줄 이내 개조식으로, 보고서체(~함)로 작성하세요."
+                },
+                {
+                    "role": "user", 
+                    "content": text
+                }
+            ],
+            temperature=0.5, # 창의성 조절 (0에 가까울수록 사실적)
+        )
+
+        # 결과를 반환합니다.
+        return completion.choices[0].message.content
+
+    except Exception as e:
+        return f"AI 오류 발생: {e}"
         당신은 군더더기 없는 '핵심 요약 전문가'입니다. 
-        아래 원문을 보고 실무자가 즉시 실행할 수 있도록 '초간단'하게 요약하세요.
+        아래 원문을 보고 실무자가 즉시 실행할 수 있도록 '간단'하게 요약하세요.
 
         [원문]:
         {text}
@@ -70,7 +87,7 @@ def run_ai_summarize(text):
         1. 인사말, 배경 설명 등 불필요한 말 삭제.
         2. 오직 '행동(Action)'과 '핵심(Key)'만 남길 것.
         3. '~함', '~할 것', '~요망' 등 명사형 종결 사용.
-        4. 최대 3~4줄 이내.
+        4. 최대 10줄 이내.
         """
         
         with st.spinner('핵심만 쏙쏙 뽑는 중... ☕'):
@@ -162,6 +179,7 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
 
