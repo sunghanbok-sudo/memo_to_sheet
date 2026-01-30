@@ -1,3 +1,4 @@
 streamlit
-google-generativeai
+groq
 gspread
+oauth2client
