@@ -74,7 +74,7 @@ def run_ai_summarize(text):
 
         # 3. AI에게 업무 지시 (Llama3 모델 사용)
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.1-8b-instant",
             messages=[
                 {
                     "role": "user",
@@ -173,3 +173,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
