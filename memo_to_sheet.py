@@ -50,33 +50,38 @@ if 'step' not in st.session_state: st.session_state.step = 'input'
 if 'raw_text' not in st.session_state: st.session_state.raw_text = ""
 if 'summarized_text' not in st.session_state: st.session_state.summarized_text = ""
 
-# --- [기능 1] Groq (Llama 3) AI 요약 함수 ---
+# --- [기능 1] Groq (Llama 3) AI 요약 함수 (수정됨) ---
 def run_ai_summarize(text):
     try:
-        # Secrets에서 Groq 키를 가져옵니다.
+        # 1. Groq 클라이언트 설정
         client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
-        # AI에게 일을 시킵니다.
+        # 2. 프롬프트 구성 (여기가 중요합니다! 따옴표 3개로 감싸져 있습니다)
+        prompt = f"""
+        당신은 진주햄 마케팅팀의 유능한 비서입니다. 
+        아래 입력된 업무 내용을 바탕으로 [실행 요약]을 3줄 이내 개조식으로, 보고서체(~함)로 작성하세요.
+        
+        입력 내용: {text}
+        """
+
+        # 3. AI에게 업무 지시 (Llama3 모델 사용)
         completion = client.chat.completions.create(
-            model="llama3-8b-8192",  # 무료이고 가장 빠른 모델
+            model="llama3-8b-8192",
             messages=[
                 {
-                    "role": "system", 
-                    "content": "당신은 진주햄 마케팅팀의 유능한 비서입니다. 업무 내용을 바탕으로 [실행 요약]을 3줄 이내 개조식으로, 보고서체(~함)로 작성하세요."
-                },
-                {
-                    "role": "user", 
-                    "content": text
+                    "role": "user",
+                    "content": prompt
                 }
             ],
-            temperature=0.5, # 창의성 조절 (0에 가까울수록 사실적)
+            temperature=0.3,
         )
 
-        # 결과를 반환합니다.
+        # 4. 결과 반환
         return completion.choices[0].message.content
 
     except Exception as e:
         return f"AI 오류 발생: {e}"
+        
         당신은 군더더기 없는 '핵심 요약 전문가'입니다. 
         아래 원문을 보고 실무자가 즉시 실행할 수 있도록 '간단'하게 요약하세요.
 
@@ -179,6 +184,7 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
 
