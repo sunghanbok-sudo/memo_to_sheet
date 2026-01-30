@@ -57,7 +57,7 @@ def run_ai_summarize(text):
         genai.configure(api_key=api_key)
         
         # 모델은 1.5-flash가 안되면 flash-latest 사용 (복성한님 상황 반영)
-        model = genai.GenerativeModel('gemini-1.5-flash-001')
+        model = genai.GenerativeModel('gemini-1.5-flash-latest')
         
         prompt = f"""
         당신은 군더더기 없는 '핵심 요약 전문가'입니다. 
@@ -162,5 +162,6 @@ def main():
 if __name__ == "__main__":
 
     main()
+
 
 
